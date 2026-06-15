@@ -16,7 +16,15 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://localhost:5000',
+        process.env.FRONTEND_URL
+    ].filter(Boolean),
+    credentials: true
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -38,9 +46,28 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/fees', feeScraperRoutes);
 app.use('/api/stats', statsRoutes);
 
+// Root Endpoint
+app.get('/', (req, res) => {
+    res.status(200).json({ message: "EduVerify Backend Running" });
+});
+
 // Health Check
 app.get('/health', (req, res) => {
-    res.json({ status: 'healthy', database: process.env.DATABASE_URL ? 'postgresql' : 'sqlite-fallback' });
+    res.status(200).json({
+        status: "ok",
+        service: "EduVerify Backend",
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal Server Error',
+        error: process.env.NODE_ENV === 'development' ? err.toString() : 'Server Error'
+    });
 });
 
 async function startServer() {
