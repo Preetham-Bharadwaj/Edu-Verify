@@ -1,6 +1,6 @@
 const SESSIONS_KEY = 'eduverify_sessions';
 const LEGACY_SESSION_KEY = 'eduverify_session';
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const PORTAL_ROLES = ['Student', 'Admin', 'Supervisor'];
 
 function decodeJwtPayload(token) {

@@ -321,7 +321,7 @@ export default function SupervisorDashboard() {
 
     const handleExport = (type, format) => {
         const token = getToken('Supervisor');
-        const url = `http://localhost:5000/api/reports/export?type=${type}&format=${format}&token=${token}`;
+        const url = `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/reports/export?type=${type}&format=${format}&token=${token}`;
         window.open(url, '_blank');
     };
 
