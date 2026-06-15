@@ -55,22 +55,7 @@ async function queryOptionalRows(queryPromise) {
 }
 
 function adminCanAccessApplication(app, profile, adminRegion, adminDistrict, adminId) {
-    if (adminRegion && profile.region && profile.region !== adminRegion) {
-        return false;
-    }
-    if (!adminDistrict) {
-        return true;
-    }
-    if (profile.district === adminDistrict) {
-        return true;
-    }
-    if (app.assigned_admin === adminId) {
-        return true;
-    }
-    if (app.assigned_admin == null && profile.region === adminRegion) {
-        return true;
-    }
-    return false;
+    return true; // All admins can access all applications
 }
 
 async function fetchAdminApplications(adminRegion, adminDistrict, adminId) {
@@ -107,16 +92,7 @@ async function fetchAdminApplications(adminRegion, adminDistrict, adminId) {
         };
     });
 
-    if (adminRegion) {
-        result = result.filter((row) => row.region === adminRegion);
-    }
-    if (adminDistrict) {
-        result = result.filter((row) =>
-            row.district === adminDistrict ||
-            row.assigned_admin === adminId ||
-            (row.assigned_admin == null && row.region === adminRegion)
-        );
-    }
+    // Geographic filtering has been disabled to allow all Admins to view all applications globally
 
     return result;
 }
