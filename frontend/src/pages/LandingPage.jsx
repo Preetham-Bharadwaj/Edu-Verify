@@ -15,6 +15,7 @@ import {
     Typography,
 } from '@mui/material';
 import SchoolRoundedIcon from '@mui/icons-material/SchoolRounded';
+import SchoolIcon from '@mui/icons-material/School';
 import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import SecurityRoundedIcon from '@mui/icons-material/SecurityRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';

@@ -206,8 +206,7 @@ export default function StudentDashboard() {
     const sidebarItems = [
         { value: 'home', label: 'Dashboard', icon: <HomeIcon /> },
         { value: 'apply', label: 'Apply Scholarship', icon: <PostAddIcon /> },
-        { value: 'status', label: 'Application Status', icon: <TrackChangesIcon /> },
-        { value: 'profile', label: 'Profile', icon: <PersonIcon /> }
+        { value: 'status', label: 'Application Status', icon: <TrackChangesIcon /> }
     ];
 
     useEffect(() => {
@@ -304,9 +303,7 @@ export default function StudentDashboard() {
 
     const quickActions = [
         { label: 'Apply for Scholarship', icon: <PostAddIcon />, tab: 'apply' },
-        { label: 'Track Application', icon: <TrackChangesIcon />, tab: 'status' },
-        { label: 'Upload Documents', icon: <DescriptionIcon />, tab: 'profile' },
-        { label: 'View Profile', icon: <PersonIcon />, tab: 'profile' }
+        { label: 'Track Application', icon: <TrackChangesIcon />, tab: 'status' }
     ];
 
     const verificationTimeline = [
@@ -461,7 +458,10 @@ export default function StudentDashboard() {
                             <IconButton size="small" onClick={handleLogout}>
                                 <LogoutIcon sx={{ color: '#c62828' }} />
                             </IconButton>
-                            <Avatar sx={{ width: 34, height: 34, bgcolor: '#0b2a5c', fontWeight: 700 }}>
+                            <Avatar 
+                                onClick={() => setCurrentTab('profile')} 
+                                sx={{ width: 34, height: 34, bgcolor: '#0b2a5c', fontWeight: 700, cursor: 'pointer', transition: '0.2s', '&:hover': { opacity: 0.8 } }}
+                            >
                                 {(student?.fullName || user?.name || 'ST').slice(0, 2).toUpperCase()}
                             </Avatar>
                         </Box>
@@ -551,7 +551,7 @@ export default function StudentDashboard() {
                                     ))}
                                 </Box>
 
-                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, minmax(0, 1fr))' }, gap: 2.5 }}>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, minmax(0, 1fr))' }, gap: 2.5 }}>
                                     {quickActions.map((action) => (
                                         <Card
                                             key={action.label}
@@ -885,7 +885,6 @@ export default function StudentDashboard() {
                     <BottomNavigationAction label="Home" value="home" icon={<HomeIcon />} />
                     <BottomNavigationAction label="Apply" value="apply" icon={<PostAddIcon />} />
                     <BottomNavigationAction label="Status" value="status" icon={<TrackChangesIcon />} />
-                    <BottomNavigationAction label="Profile" value="profile" icon={<PersonIcon />} />
                 </BottomNavigation>
             </Box>
             <Menu
