@@ -153,9 +153,7 @@ router.post('/scrape', verifyToken, requireRole(['Admin', 'Supervisor']), async 
                             id: crypto.randomUUID(),
                             school_name: record.institution_name,
                             grade: record.course_grade,
-                            total_fee: record.annual_fee,
-                            fee_paid: 0,
-                            payment_status: 'Unpaid'
+                            total_fee: record.annual_fee
                         }]);
                 }
 

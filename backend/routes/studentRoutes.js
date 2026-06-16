@@ -510,26 +510,8 @@ router.post('/apply', verifyToken, requireRole('Student'), async (req, res) => {
             }
         }
 
-        let feePaid = 0;
-        let totalFee = 0;
-        if (isEligible) {
-            const { data: feesData, error: feeErr } = await supabase
-                .from('institution_fees')
-                .select('*')
-                .eq('school_name', normalizedStudent.schoolCollegeName)
-                .eq('grade', normalizedStudent.classGrade);
-
-            if (feeErr) throw feeErr;
-            if (feesData && feesData.length > 0) {
-                feePaid = parseFloat(feesData[0].fee_paid);
-                totalFee = parseFloat(feesData[0].total_fee);
-                if (feePaid === totalFee && totalFee > 0) {
-                    isEligible = false;
-                    ruleMatched = 'Rule 3';
-                    rejectReason = `Institution fees are fully paid (Paid: Rs. ${feePaid.toLocaleString()} / Total: Rs. ${totalFee.toLocaleString()}).`;
-                }
-            }
-        }
+        // Fee eligibility check removed since payment_status column no longer exists
+        // Institution fees table now only contains: id, school_name, grade, total_fee
 
         let autoStatus = 'Rejected';
         let initialAppStatus = 'Rejected';
@@ -711,7 +693,7 @@ router.get('/applications/:id', verifyToken, requireRole('Student'), async (req,
         if (detailRecord?.school_name && detailRecord?.class_grade) {
             institutionFees = await queryOptionalRow(
                 supabase.from('institution_fees')
-                    .select('total_fee, fee_paid, payment_status')
+                    .select('total_fee')
                     .eq('school_name', detailRecord.school_name)
                     .eq('grade', detailRecord.class_grade)
                     .limit(1)

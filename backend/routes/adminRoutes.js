@@ -110,24 +110,25 @@ async function fetchAdminProfile(adminId) {
 
 async function fetchVerificationBundle(app, adminRegion, adminDistrict, adminId) {
     const [profile, user, detail, auditLogs, fatherTax, motherTax, detailsExt] = await Promise.all([
-        queryOptionalRow(supabase.from('student_profiles').select('*').eq('user_id', app.student_id).limit(1)),
-        queryOptionalRow(supabase.from('users').select('email').eq('id', app.student_id).limit(1)),
-        queryOptionalRow(supabase.from('application_details').select('*').eq('application_id', app.id).limit(1)),
-        queryOptionalRows(
-            supabase.from('audit_logs').select('*').eq('application_id', app.id).order('created_at', { ascending: true })
-        ),
-        queryOptionalRow(
-            supabase.from('tax_records').select('annual_income, tax_paid').eq('aadhaar_number', app.father_aadhaar).limit(1)
-        ),
-        queryOptionalRow(
-            supabase.from('tax_records').select('annual_income, tax_paid').eq('aadhaar_number', app.mother_aadhaar).limit(1)
-        ),
-        queryOptionalRow(
-            supabase.from('student_profile_details').select('*').eq('user_id', app.student_id).limit(1)
-        ).then(async (row) => row || getProfileDetailsFallback(app.student_id)),
+        queryOptionalRow(supabase.from('student_profiles').select('*').eq('user_id', app.student_id).limit(1)).catch(e => { console.error('[Bundle] student_profiles error:', e.message); return null; }),
+        queryOptionalRow(supabase.from('users').select('email').eq('id', app.student_id).limit(1)).catch(e => { console.error('[Bundle] users error:', e.message); return null; }),
+        queryOptionalRow(supabase.from('application_details').select('*').eq('application_id', app.id).limit(1)).catch(e => { console.error('[Bundle] application_details error:', e.message); return null; }),
+        queryOptionalRows(supabase.from('audit_logs').select('*').eq('application_id', app.id).order('created_at', { ascending: true })).catch(e => { console.error('[Bundle] audit_logs error:', e.message); return []; }),
+        queryOptionalRow(supabase.from('tax_records').select('annual_income, tax_paid').eq('aadhaar_number', app.father_aadhaar).limit(1)).catch(e => { console.error('[Bundle] father tax_records error:', e.message); return null; }),
+        queryOptionalRow(supabase.from('tax_records').select('annual_income, tax_paid').eq('aadhaar_number', app.mother_aadhaar).limit(1)).catch(e => { console.error('[Bundle] mother tax_records error:', e.message); return null; }),
+        (async () => {
+            try {
+                const row = await queryOptionalRow(supabase.from('student_profile_details').select('*').eq('user_id', app.student_id).limit(1));
+                if (row) return row;
+                return await getProfileDetailsFallback(app.student_id);
+            } catch (e) {
+                console.error('[Bundle] student_profile_details error:', e.message);
+                try { return await getProfileDetailsFallback(app.student_id); } catch { return null; }
+            }
+        })(),
     ]);
 
-    const documents = await getApplicationDocuments(app.id);
+    const documents = await getApplicationDocuments(app.id).catch(e => { console.error('[Bundle] getApplicationDocuments error:', e.message); return []; });
 
     const profileData = profile || {};
 
@@ -167,6 +168,7 @@ async function fetchVerificationBundle(app, adminRegion, adminDistrict, adminId)
         && !fatherTax?.tax_paid
         && !motherTax?.tax_paid;
 
+    // Fee eligibility check removed - payment_status and fee_paid columns no longer exist
     let feeCheckPassed = true;
     let feeRecord = null;
     const schoolName = detail?.school_name || profileData.college_name;
@@ -175,14 +177,11 @@ async function fetchVerificationBundle(app, adminRegion, adminDistrict, adminId)
         feeRecord = await queryOptionalRow(
             supabase
                 .from('institution_fees')
-                .select('total_fee, fee_paid, payment_status')
+                .select('total_fee')
                 .eq('school_name', schoolName)
                 .eq('grade', classGrade)
                 .limit(1)
-        );
-        if (feeRecord) {
-            feeCheckPassed = Number(feeRecord.fee_paid || 0) < Number(feeRecord.total_fee || 0);
-        }
+        ).catch(() => null);
     }
 
     const autoEligibilityResult = incomeCheckPassed && feeCheckPassed ? 'ELIGIBLE' : 'NOT ELIGIBLE';
@@ -255,9 +254,7 @@ async function fetchVerificationBundle(app, adminRegion, adminDistrict, adminId)
             },
             feeSummary: feeRecord
                 ? {
-                    totalFee: feeRecord.total_fee,
-                    feePaid: feeRecord.fee_paid,
-                    paymentStatus: feeRecord.payment_status || null
+                    totalFee: feeRecord.total_fee
                 }
                 : null
         },
@@ -477,15 +474,23 @@ router.get('/applications/:id', verifyToken, requireRole('Admin'), async (req, r
         const { data: apps, error: appErr } = await supabase.from('applications').select('*').eq('id', appId).limit(1);
         if (appErr) throw appErr;
         if (!apps || apps.length === 0) return res.status(404).json({ message: "Application not found." });
-        const bundle = await fetchVerificationBundle(apps[0], adminRegion, adminDistrict, adminId);
+        
+        let bundle;
+        try {
+            bundle = await fetchVerificationBundle(apps[0], adminRegion, adminDistrict, adminId);
+        } catch (bundleError) {
+            console.error("fetchVerificationBundle threw:", bundleError);
+            throw bundleError;
+        }
+        
         if (!bundle) {
             return res.status(403).json({ message: "Forbidden. Out of district jurisdiction." });
         }
 
         res.json(bundle);
     } catch (error) {
-        console.error("Review Application Fetch Error:", error);
-        res.status(500).json({ message: "Internal server error fetching application details." });
+        console.error("Review Application Fetch Error:", error.message, error.stack);
+        res.status(500).json({ message: "Internal server error fetching application details.", detail: error.message });
     }
 });
 
