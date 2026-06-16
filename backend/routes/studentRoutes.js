@@ -50,7 +50,7 @@ function mapProfileResponse(user, profile, details) {
         fullName: profile?.student_name || user?.name || '',
         studentId: profile?.student_id || '',
         email: user?.email || '',
-        phone: details?.phone || '',
+        phone: profile?.phone || details?.phone || '',
         studentPhoto: details?.student_photo_data_base64
             ? {
                 fileName: details.student_photo_name || 'student-photo',
@@ -59,17 +59,18 @@ function mapProfileResponse(user, profile, details) {
             }
             : null,
         personalInformation: {
-            dateOfBirth: details?.date_of_birth || '',
-            gender: details?.gender || '',
-            address: details?.address || '',
+            dateOfBirth: profile?.date_of_birth || details?.date_of_birth || '',
+            gender: profile?.gender || details?.gender || '',
+            address: profile?.address || details?.address || '',
             region: profile?.region || '',
             district: profile?.district || ''
         },
         academicInformation: {
             institutionName: profile?.college_name || '',
-            institutionType: details?.institution_type || 'School',
+            institutionType: profile?.institution_type || details?.institution_type || 'School',
             courseGrade: details?.course_grade || profile?.grade || '',
-            academicYear: details?.academic_year || ''
+            academicYear: profile?.academic_year || details?.academic_year || '',
+            semester: profile?.semester || ''
         },
         parentInformation: {
             fatherName: details?.father_name || '',
@@ -330,7 +331,8 @@ router.post('/apply', verifyToken, requireRole('Student'), async (req, res) => {
         currentClass: academicInformation.currentClass || normalizedStudent.classGrade || '',
         previousYearPercentage: academicInformation.previousYearPercentage || '',
         institutionName: academicInformation.institutionName || normalizedStudent.schoolCollegeName || '',
-        academicYear: academicInformation.academicYear || ''
+        academicYear: academicInformation.academicYear || '',
+        semester: academicInformation.semester || ''
     };
 
     if (
@@ -402,6 +404,13 @@ router.post('/apply', verifyToken, requireRole('Student'), async (req, res) => {
                     grade: normalizedStudent.classGrade || profile.grade,
                     region: applicationRegion,
                     district: applicationDistrict,
+                    phone: normalizedPersonal.phone || profile.phone,
+                    date_of_birth: normalizedPersonal.dateOfBirth || profile.date_of_birth,
+                    gender: normalizedPersonal.gender || profile.gender,
+                    address: normalizedPersonal.address || profile.address,
+                    academic_year: normalizedAcademic.academicYear || profile.academic_year,
+                    institution_type: normalizedStudent.institutionType || profile.institution_type || 'School',
+                    semester: normalizedAcademic.semester || profile.semester
                 })
                 .eq('user_id', userId);
             if (profileUpdateErr) throw profileUpdateErr;
@@ -556,6 +565,10 @@ router.post('/apply', verifyToken, requireRole('Student'), async (req, res) => {
         const applicationId = crypto.randomUUID();
         const applicationNumber = `SCH-${Date.now().toString().slice(-6)}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+        const combinedFamilyIncome = fatherDeclaredIncome + motherDeclaredIncome;
+        const incomeVerificationStatus = isEligible ? 'Verified - Eligible' : 'Verified - Not Eligible';
+        const applicationYear = new Date().getFullYear();
+
         const { error: appInsertErr } = await supabase
             .from('applications')
             .insert([{
@@ -566,6 +579,13 @@ router.post('/apply', verifyToken, requireRole('Student'), async (req, res) => {
                 mother_name: normalizedParent.motherName,
                 father_aadhaar: normalizedParent.fatherAadhaar,
                 mother_aadhaar: normalizedParent.motherAadhaar,
+                father_occupation: normalizedParent.fatherOccupation,
+                father_annual_income: fatherDeclaredIncome,
+                mother_occupation: normalizedParent.motherOccupation,
+                mother_annual_income: motherDeclaredIncome,
+                combined_family_income: combinedFamilyIncome,
+                income_verification_status: incomeVerificationStatus,
+                application_year: applicationYear,
                 status: initialAppStatus,
                 auto_eligibility_status: autoStatus,
                 auto_eligibility_reason: autoReason,
@@ -856,7 +876,14 @@ router.put('/profile', verifyToken, requireRole('Student'), async (req, res) => 
                 college_name: institutionName,
                 grade: courseGrade,
                 district,
-                region
+                region,
+                phone: phone || null,
+                date_of_birth: dateOfBirth || null,
+                gender: gender || null,
+                address: address || null,
+                academic_year: academicYear || null,
+                institution_type: req.body.institutionType || null,
+                semester: req.body.semester || null
             })
             .eq('user_id', userId);
         if (profileErr) throw profileErr;

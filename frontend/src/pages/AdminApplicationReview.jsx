@@ -403,6 +403,13 @@ export default function AdminApplicationReview() {
                                             }}>
                                             <KV label="Address" value={bundle.studentDetails?.address} />
                                         </Grid>
+                                        <Grid
+                                            size={{
+                                                xs: 12,
+                                                sm: 6
+                                            }}>
+                                            <KV label="Institution Type" value={bundle.studentDetails?.institutionType || '—'} />
+                                        </Grid>
                                     </Grid>
                                 </Section>
 
@@ -461,6 +468,12 @@ export default function AdminApplicationReview() {
                                         </Typography>
                                         <Typography sx={{ fontSize: 13.5, fontWeight: 700, color: '#0F172A', mt: 0.5 }}>
                                             Combined Family Income: {formatCurrency(bundle.parentVerification?.combinedFamilyIncome) || '—'}
+                                        </Typography>
+                                        <Typography sx={{ fontSize: 13.5, color: '#475569', mt: 0.5 }}>
+                                            Income Verification Status: {bundle.parentVerification?.incomeVerificationStatus || '—'}
+                                        </Typography>
+                                        <Typography sx={{ fontSize: 13.5, color: '#475569' }}>
+                                            Application Year: {bundle.parentVerification?.applicationYear || new Date().getFullYear()}
                                         </Typography>
                                     </Stack>
 
@@ -523,9 +536,9 @@ export default function AdminApplicationReview() {
                                             <KV
                                                 label="Year / Semester"
                                                 value={
-                                                    bundle.application?.year_of_study
-                                                    || bundle.studentDetails?.year
-                                                    || bundle.application?.details?.academic_year
+                                                    bundle.studentDetails?.semester 
+                                                    ? `${bundle.studentDetails?.year || '—'} / Semester ${bundle.studentDetails?.semester}`
+                                                    : (bundle.application?.year_of_study || bundle.studentDetails?.year || bundle.application?.details?.academic_year || '—')
                                                 }
                                             />
                                         </Grid>

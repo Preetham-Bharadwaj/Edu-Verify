@@ -108,6 +108,7 @@ export default function ScholarshipForm({ onComplete, profile: profileProp, refe
         schoolCollegeName: '',
         currentGrade: '',
         academicYear: '',
+        semester: '',
         phone: '',
         dateOfBirth: '',
         gender: '',
@@ -167,6 +168,7 @@ export default function ScholarshipForm({ onComplete, profile: profileProp, refe
             schoolCollegeName: profile.academicInformation?.institutionName || '',
             currentGrade: profile.academicInformation?.courseGrade || '',
             academicYear: profile.academicInformation?.academicYear || '',
+            semester: profile.academicInformation?.semester || '',
             phone: profile.phone || '',
             dateOfBirth: profile.personalInformation?.dateOfBirth || '',
             gender: profile.personalInformation?.gender || '',
@@ -374,7 +376,8 @@ export default function ScholarshipForm({ onComplete, profile: profileProp, refe
                 academicInformation: {
                     currentClass: studentInfo.currentGrade,
                     institutionName: studentInfo.schoolCollegeName,
-                    academicYear: studentInfo.academicYear
+                    academicYear: studentInfo.academicYear,
+                    semester: studentInfo.semester
                 },
                 documents: Object.values(documents),
                 fatherName: parentInfo.fatherName,
@@ -448,6 +451,19 @@ export default function ScholarshipForm({ onComplete, profile: profileProp, refe
                         <TextField label="School / Institution Name" value={studentInfo.schoolCollegeName} onChange={(e) => handleFieldChange(setStudentInfo, 'schoolCollegeName', e.target.value)} fullWidth />
                         <TextField label="Class / Grade / Year" placeholder="e.g. Class 10, Year 2, B.Tech 3rd Year" value={studentInfo.currentGrade} onChange={(e) => handleFieldChange(setStudentInfo, 'currentGrade', e.target.value)} fullWidth />
                         <TextField label="Academic Year" placeholder="e.g. 2025-26" value={studentInfo.academicYear} onChange={(e) => handleFieldChange(setStudentInfo, 'academicYear', e.target.value)} fullWidth />
+                        <TextField
+                            select
+                            label="Semester (optional)"
+                            value={studentInfo.semester}
+                            onChange={(e) => handleFieldChange(setStudentInfo, 'semester', e.target.value)}
+                            fullWidth
+                            slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}
+                        >
+                            <MenuItem value=""><em>Not Applicable</em></MenuItem>
+                            {[1,2,3,4,5,6,7,8].map((s) => (
+                                <MenuItem key={s} value={String(s)}>Semester {s}</MenuItem>
+                            ))}
+                        </TextField>
                         <TextField label="Phone Number" value={studentInfo.phone} onChange={(e) => handleFieldChange(setStudentInfo, 'phone', e.target.value.replace(/\D/g, '').slice(0, 10))} fullWidth />
                         <TextField label="Date of Birth" type="date" value={studentInfo.dateOfBirth} onChange={(e) => handleFieldChange(setStudentInfo, 'dateOfBirth', e.target.value)} fullWidth slotProps={{ inputLabel: { shrink: true } }} />
                         <TextField select label="Gender" value={studentInfo.gender} onChange={(e) => handleFieldChange(setStudentInfo, 'gender', e.target.value)} fullWidth>
@@ -584,7 +600,7 @@ export default function ScholarshipForm({ onComplete, profile: profileProp, refe
                                 <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>Student Details</Typography>
                                 <Typography variant="body2">{studentInfo.fullName} | {studentInfo.studentId}</Typography>
                                 <Typography variant="body2">{studentInfo.institutionType}: {studentInfo.schoolCollegeName}</Typography>
-                                <Typography variant="body2">{studentInfo.currentGrade} | Academic Year: {studentInfo.academicYear}</Typography>
+                                <Typography variant="body2">{studentInfo.currentGrade}{studentInfo.semester ? ` | Semester ${studentInfo.semester}` : ''} | Academic Year: {studentInfo.academicYear}</Typography>
                                 <Typography variant="body2">Phone: {studentInfo.phone} | DOB: {studentInfo.dateOfBirth}</Typography>
                                 <Typography variant="body2">{studentInfo.gender} | {studentInfo.address}</Typography>
                                 <Typography variant="body2">{studentInfo.district}, {studentInfo.state}</Typography>

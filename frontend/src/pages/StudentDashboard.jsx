@@ -191,8 +191,10 @@ export default function StudentDashboard() {
         region: '',
         district: '',
         institutionName: '',
+        institutionType: 'School',
         courseGrade: '',
         academicYear: '',
+        semester: '',
         fatherName: '',
         motherName: '',
         fatherAadhaar: '',
@@ -228,8 +230,10 @@ export default function StudentDashboard() {
             region: profileView.personalInformation?.region || '',
             district: profileView.personalInformation?.district || '',
             institutionName: profileView.academicInformation?.institutionName || '',
+            institutionType: profileView.academicInformation?.institutionType || 'School',
             courseGrade: profileView.academicInformation?.courseGrade || '',
             academicYear: profileView.academicInformation?.academicYear || '',
+            semester: profileView.academicInformation?.semester || '',
             fatherName: profileView.parentInformation?.fatherName || '',
             motherName: profileView.parentInformation?.motherName || '',
             fatherAadhaar: profileView.parentInformation?.fatherAadhaar || '',
@@ -825,8 +829,18 @@ export default function StudentDashboard() {
                                                             <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Academic Details</Typography>
                                                             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }, gap: 2 }}>
                                                                 <TextField label="School / Institution Name" value={profileForm.institutionName} onChange={(e) => handleProfileField('institutionName', e.target.value)} fullWidth sx={{ gridColumn: { md: '1 / span 2' } }} />
+                                                                <TextField select label="Institution Type" value={profileForm.institutionType} onChange={(e) => handleProfileField('institutionType', e.target.value)} fullWidth>
+                                                                    <MenuItem value="School">School</MenuItem>
+                                                                    <MenuItem value="College">College / University</MenuItem>
+                                                                </TextField>
                                                                 <TextField label="Class / Grade / Year" value={profileForm.courseGrade} onChange={(e) => handleProfileField('courseGrade', e.target.value)} fullWidth />
                                                                 <TextField label="Academic Year" placeholder="e.g. 2025-26" value={profileForm.academicYear} onChange={(e) => handleProfileField('academicYear', e.target.value)} fullWidth />
+                                                                <TextField select label="Semester (optional)" value={profileForm.semester} onChange={(e) => handleProfileField('semester', e.target.value)} fullWidth slotProps={{ select: { displayEmpty: true }, inputLabel: { shrink: true } }}>
+                                                                    <MenuItem value=""><em>Not Applicable</em></MenuItem>
+                                                                    {[1,2,3,4,5,6,7,8].map((s) => (
+                                                                        <MenuItem key={s} value={String(s)}>Semester {s}</MenuItem>
+                                                                    ))}
+                                                                </TextField>
                                                             </Box>
                                                         </CardContent>
                                                     </Card>

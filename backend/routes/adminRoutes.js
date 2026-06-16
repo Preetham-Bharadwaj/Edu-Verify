@@ -211,12 +211,14 @@ async function fetchVerificationBundle(app, adminRegion, adminDistrict, adminId)
             region: detail?.region || profileData.region || app.region || '',
             district: detail?.district || profileData.district || app.district || '',
             email: user?.email || app.student_email || '',
-            phone: detailsExt?.phone || '',
-            dateOfBirth: detailsExt?.date_of_birth || null,
-            gender: detailsExt?.gender || null,
-            address: detailsExt?.address || '',
+            phone: profileData.phone || detailsExt?.phone || '',
+            dateOfBirth: profileData.date_of_birth || detailsExt?.date_of_birth || null,
+            gender: profileData.gender || detailsExt?.gender || null,
+            address: profileData.address || detailsExt?.address || '',
             course: detailsExt?.course_grade || profileData.grade || app.grade || '',
-            year: academicYear
+            year: profileData.academic_year || academicYear || null,
+            semester: profileData.semester || null,
+            institutionType: profileData.institution_type || detailsExt?.institution_type || 'School'
         },
         fatherDetails: {
             name: detail?.father_name || app.father_name || '',
@@ -235,10 +237,12 @@ async function fetchVerificationBundle(app, adminRegion, adminDistrict, adminId)
             taxPaid: Boolean(motherTax?.tax_paid),
         },
         parentVerification: {
-            combinedFamilyIncome,
+            combinedFamilyIncome: app.combined_family_income ?? combinedFamilyIncome,
+            incomeVerificationStatus: app.income_verification_status || incomeEligibilityStatus,
             incomeEligibilityStatus,
             incomeThreshold: SCHOLARSHIP_INCOME_THRESHOLD,
             verifiedHouseholdIncome,
+            applicationYear: app.application_year || new Date().getFullYear()
         },
         documents,
         autoVerificationResults: {

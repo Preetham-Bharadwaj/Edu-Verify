@@ -231,9 +231,9 @@ export default function AdminApplications() {
                             <Table>
                                 <TableHead>
                                     <TableRow sx={{ bgcolor: '#f8fafc' }}>
-                                        {['Application ID', 'Student Name', 'College', 'Auto Eligibility', 'Status', 'Submitted Date', 'Action'].map((h) => (
+                                        {['Application ID', 'Student Name', 'College', 'Combined Income', 'Income Status', 'App Year', 'Auto Eligibility', 'Status', 'Submitted Date', 'Action'].map((h) => (
                                             <TableCell key={h} align={h === 'Action' ? 'right' : 'left'}
-                                                sx={{ fontSize: 11.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', py: 1.5, borderBottom: '1px solid #f1f5f9' }}>{h}</TableCell>
+                                                sx={{ fontSize: 11.5, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em', py: 1.5, borderBottom: '1px solid #f1f5f9', whiteSpace: 'nowrap' }}>{h}</TableCell>
                                         ))}
                                     </TableRow>
                                 </TableHead>
@@ -243,6 +243,15 @@ export default function AdminApplications() {
                                             <TableCell sx={{ fontSize: 13, fontWeight: 700, color: '#1d4ed8' }}>{row.application_number}</TableCell>
                                             <TableCell sx={{ fontSize: 13, fontWeight: 600, color: '#0f172a' }}>{row.student_name || '-'}</TableCell>
                                             <TableCell sx={{ fontSize: 13, color: '#475569' }}>{row.college_name || '-'}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: '#0f172a', fontWeight: 600 }}>
+                                                {row.combined_family_income != null
+                                                    ? `₹${Number(row.combined_family_income).toLocaleString('en-IN')}`
+                                                    : '-'}
+                                            </TableCell>
+                                            <TableCell sx={{ fontSize: 12, color: row.income_verification_status?.includes('Eligible') && !row.income_verification_status?.includes('Not') ? '#15803d' : '#b91c1c' }}>
+                                                {row.income_verification_status || '-'}
+                                            </TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: '#475569' }}>{row.application_year || new Date(row.created_at).getFullYear()}</TableCell>
                                             <TableCell><EligibilityBadge status={row.auto_eligibility_status} /></TableCell>
                                             <TableCell><StatusBadge status={row.status} /></TableCell>
                                             <TableCell sx={{ fontSize: 13, color: '#64748b' }}>{new Date(row.created_at).toLocaleDateString()}</TableCell>
@@ -264,7 +273,7 @@ export default function AdminApplications() {
                                                         '&:hover': { bgcolor: '#dbeafe' },
                                                     }}
                                                 >
-                                                    View Application
+                                                    View
                                                 </Button>
                                             </TableCell>
                                         </TableRow>
